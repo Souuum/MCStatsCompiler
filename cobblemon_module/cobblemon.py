@@ -67,10 +67,10 @@ def loadData(csvtoggle, csvpath, useftp, ftpserver, ftppath):
                 
             ftpserver.cwd("../")  # Move back to the parent directory
     else:
-        names_file = open('../data/usercache.json', 'r')
+        names_file = open('../../data/usercache.json', 'r')
         names = pd.DataFrame(json.load(names_file))
         i = -1
-        path = 'cobblemonplayerdata'
+        path = '../../data/world/cobblemonplayerdata'
         for dirpath, dirnames, filenames in os.walk(path):
             if len(dirnames) > 0:
                 root_dirnames = dirnames
@@ -133,6 +133,67 @@ def most_pokemons_leaderboard(df, config, type):
     wb.save(file_path)
 
 
+def most_pokemons_leaderboard_html(df, config, type):
+    num_players = len(df)
+
+    now = datetime.datetime.now()
+    last_updated = now.strftime(config['LastUpdated'])
+    subtitle = config['Subtitle']
+
+    leaderboard_class = type.lower()
+
+    html = "<html>\n<head>\n"
+    html += f"<meta charset='utf-8'>\n<title>Leaderboard - {type.capitalize()}</title>\n"
+
+    html += '<link rel="stylesheet" type="text/css" href="leaderboard_styles.css">\n'
+
+    html += "</head>\n<body>\n"
+    html += '<div class="container">\n'
+    html += f"<h2>Leaderboard - {type.capitalize()}</h2>\n"
+    html += f'<table class="{leaderboard_class}">\n'
+
+    # Add table headers
+    html += "  <tr>\n"
+    html += "    <th>Rank</th>\n"
+    html += "    <th>Player Name</th>\n"
+    html += "    <th>Value</th>\n"
+    html += "  </tr>\n"
+
+    for i, (index, row) in enumerate(df.iterrows(), start=1):
+        html += "  <tr>\n"
+        html += f"    <td>{i}</td>\n"
+        #add emoji for the first 3 places next to the name
+        if i == 1:
+            html += f"    <td>🥇 {index}</td>\n"
+        elif i == 2:
+            html += f"    <td>🥈 {index}</td>\n"
+        elif i == 3:
+            html += f"    <td>🥉 {index}</td>\n"
+        else:
+            html += f"    <td>{index}</td>\n"
+
+        html += f"    <td>{row.iloc[0]}</td>\n"
+        html += "  </tr>\n"
+
+    html += "</table>\n"
+
+    html += f'<p class="footer">Last Updated: {last_updated}</p>\n'
+    html += "</div>\n"
+    html += "</body>\n</html>"
+
+    output_file_mapping = {
+        "standard": "output_standard.html",
+        "shiny": "output_shiny.html",
+        "legendary": "output_legendary.html"
+    }
+    output_file = output_file_mapping.get(type, "output.html")
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    print(f"Leaderboard saved to {output_file}")
+
+
 # Read config
 config = configparser.ConfigParser()
 config.read('cobblemon_config.ini', encoding='utf8')
@@ -166,7 +227,7 @@ if config['LEADERBOARD']['Enable'] == "true":
     ignore_names = [name.strip() for name in config['LEADERBOARD']['IgnoreNames'].split(",") if name.strip()]
     player_sum.drop(ignore_names, inplace=True, errors='ignore')
     #print(player_sum)
-    most_pokemons_leaderboard(player_sum, config['LEADERBOARD'], "standard")
+    most_pokemons_leaderboard_html(player_sum, config['LEADERBOARD'], "standard")
 
 # Shiny leaderboard feature
 if config['SHINYLEADERBOARD']['Enable'] == "true":
@@ -176,7 +237,7 @@ if config['SHINYLEADERBOARD']['Enable'] == "true":
     ignore_names = [name.strip() for name in config['SHINYLEADERBOARD']['IgnoreNames'].split(",") if name.strip()]
     player_sum.drop(ignore_names, inplace=True, errors='ignore')
     #print(player_sum)
-    most_pokemons_leaderboard(player_sum, config['SHINYLEADERBOARD'], "shiny")
+    most_pokemons_leaderboard_html(player_sum, config['SHINYLEADERBOARD'], "shiny")
     
 # Legendary leaderboard feature
 if config['LEGLEADERBOARD']['Enable'] == "true":
@@ -192,6 +253,6 @@ if config['LEGLEADERBOARD']['Enable'] == "true":
     ignore_names = [name.strip() for name in config['LEGLEADERBOARD']['IgnoreNames'].split(",") if name.strip()]
     player_sum.drop(ignore_names, inplace=True, errors='ignore')
     #print(player_sum)
-    most_pokemons_leaderboard(player_sum, config['LEGLEADERBOARD'], "legendary")
+    most_pokemons_leaderboard_html(player_sum, config['LEGLEADERBOARD'], "legendary")
 
 print("Done!")
