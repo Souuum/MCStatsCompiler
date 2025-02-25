@@ -8,7 +8,7 @@ import datetime
 import ftplib
 import math
 import warnings
-
+import requests
 
 def loadData(csvtoggle, csvpath, useftp, ftpserver, ftppath):
     df = pd.DataFrame()
@@ -136,7 +136,8 @@ def most_pokemons_leaderboard(df, config, type):
 def most_pokemons_leaderboard_html(df, config, type):
     num_players = len(df)
 
-    now = datetime.datetime.now()
+    #date based on Paris timezone
+    now = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=1)))
     last_updated = now.strftime(config['LastUpdated'])
     subtitle = config['Subtitle']
 
@@ -154,37 +155,32 @@ def most_pokemons_leaderboard_html(df, config, type):
 
     # Add table headers
     html += "  <tr>\n"
-    html += "    <th>Rank</th>\n"
-    html += "    <th>Player Name</th>\n"
-    html += "    <th>Value</th>\n"
+    html += "    <th>Rang</th>\n"
+    html += "    <th id='header-player'>Joueur</th>\n"
+    html += "    <th>Capturés</th>\n"
     html += "  </tr>\n"
 
     for i, (index, row) in enumerate(df.iterrows(), start=1):
         html += "  <tr>\n"
         html += f"    <td>{i}</td>\n"
-        #add emoji for the first 3 places next to the name
-        if i == 1:
-            html += f"    <td>🥇 {index}</td>\n"
-        elif i == 2:
-            html += f"    <td>🥈 {index}</td>\n"
-        elif i == 3:
-            html += f"    <td>🥉 {index}</td>\n"
-        else:
-            html += f"    <td>{index}</td>\n"
-
+        html += (f"    <td>"
+                    f"    <div class='player-container'>"
+        f" <img src='https://minotar.net/helm/{index}/32.png' alt='{index}' class='player-face'>"
+        f"<span class='player-text'>{index}</span></div>"
+                 f"</td>\n")
         html += f"    <td>{row.iloc[0]}</td>\n"
         html += "  </tr>\n"
 
     html += "</table>\n"
 
-    html += f'<p class="footer">Last Updated: {last_updated}</p>\n'
+    html += f'<p class="footer">{last_updated}</p>\n'
     html += "</div>\n"
     html += "</body>\n</html>"
 
     output_file_mapping = {
-        "standard": "output_standard.html",
-        "shiny": "output_shiny.html",
-        "legendary": "output_legendary.html"
+        "standard": "./html/output_standard.html",
+        "shiny": "./html/output_shiny.html",
+        "legendary": "./html/output_legendary.html"
     }
     output_file = output_file_mapping.get(type, "output.html")
 
@@ -200,6 +196,7 @@ config.read('cobblemon_config.ini', encoding='utf8')
 
 # Connect to FTP if activated
 ftp_server = None
+
 if config['FTP']['UseFTP'] == "true":
     ftp_server = ftplib.FTP(config['FTP']['Host'], open("../username.txt", "r").read(), open("../password.txt", "r").read())
     ftp_server.encoding = "utf-8"
@@ -238,7 +235,7 @@ if config['SHINYLEADERBOARD']['Enable'] == "true":
     player_sum.drop(ignore_names, inplace=True, errors='ignore')
     #print(player_sum)
     most_pokemons_leaderboard_html(player_sum, config['SHINYLEADERBOARD'], "shiny")
-    
+
 # Legendary leaderboard feature
 if config['LEGLEADERBOARD']['Enable'] == "true":
     legs = legendary_list['Cobblemon'].tolist()

@@ -6,18 +6,36 @@ body {
     display: flex;
     justify-content: center;
     background: transparent;
+    color: #fff;
 }
 
 .container {
-    width: 80%;
-    background: white;
+    width: 100%;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+
+.player-container {
+    display: flex;          /* Enables Flexbox */
+    align-items: center;    /* Aligns items vertically */
+    gap: 8px;              /* Space between image and text */
+    align-self: center;
+    justify-content: center;
+}
+
+.player-face {
+    width: 32px;           /* Match the image size */
+    height: 32px;          /* Keep it square */
+    border-radius: 4px;    /* Optional: Adds rounded corners */
+}
+
+.player-text {
+    font-size: 16px;      /* Adjust text size */
+}
+
 
 /* Title & Subtitle */
 h2 {
@@ -25,10 +43,13 @@ h2 {
     font-size: 24px;
 }
 
+#header-player{
+    width: 400px;
+}
+
 .subtitle {
     text-align: center;
     font-size: 16px;
-    color: #666;
     margin-bottom: 10px;
 }
 
@@ -44,6 +65,10 @@ th, td {
     color: white;
     padding: 12px;
     text-align: center;
+
+}
+
+td {
 }
 
 th {
@@ -69,6 +94,5 @@ tr:hover { background-color: #ddd; transition: 0.3s; }
 .footer {
     text-align: center;
     font-size: 14px;
-    color: #555;
     margin-top: 10px;
 }
